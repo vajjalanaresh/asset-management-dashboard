@@ -6,10 +6,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createAsset } from "./queries";
 import { ArrowLeft } from "lucide-react";
 
+// The schema now matches the API's accepted status types
 const schema = z.object({
   name: z.string().min(1, "Asset name is required"),
   type: z.string().min(1, "Asset type is required"),
-  status: z.enum(["Active", "Maintenance", "Inactive"]),
+  status: z.enum(["Active", "Inactive"]),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -50,7 +51,6 @@ export default function AssetCreate() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-8">
-      <h1 className="text-2xl font-bold text-gray-900">Add New Asset</h1>
       <div className="flex items-center gap-4">
         <button
           onClick={() => navigate(-1)}
@@ -64,6 +64,7 @@ export default function AssetCreate() {
           <p className="text-gray-500">Add a new asset under this building</p>
         </div>
       </div>
+
       <form
         onSubmit={handleSubmit((data) => mutation.mutate(data))}
         className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm space-y-6"
@@ -106,9 +107,11 @@ export default function AssetCreate() {
             className="w-full border rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
           >
             <option value="Active">Active</option>
-            <option value="Maintenance">Maintenance</option>
             <option value="Inactive">Inactive</option>
           </select>
+          {errors.status && (
+            <p className="text-red-500 text-sm mt-1">{errors.status.message}</p>
+          )}
         </div>
 
         {/* Actions */}
