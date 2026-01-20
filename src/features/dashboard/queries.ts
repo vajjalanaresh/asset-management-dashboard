@@ -1,19 +1,25 @@
-import { supabase } from '../../lib/supabase';
+import { supabase } from "../../lib/supabase";
 
 export async function fetchDashboardStats() {
-  const [customers, buildings, assets] = await Promise.all([
-    supabase.from('customers').select('id', { count: 'exact', head: true }),
-    supabase.from('buildings').select('id', { count: 'exact', head: true }),
-    supabase.from('assets').select('id', { count: 'exact', head: true }),
+  const [
+    customers,
+    buildings,
+    assets,
+  ] = await Promise.all([
+    supabase.from("customers").select("id", { count: "exact" }),
+    supabase.from("buildings").select("id", { count: "exact" }),
+    supabase.from("assets").select("status", { count: "exact" }),
   ]);
 
-  if (customers.error || buildings.error || assets.error) {
-    throw new Error('Failed to fetch dashboard stats');
-  }
+  const totalAssets = assets.count || 0;
 
   return {
-    customers: customers.count ?? 0,
-    buildings: buildings.count ?? 0,
-    assets: assets.count ?? 0,
+    totalCustomers: customers.count || 0,
+    totalBuildings: buildings.count || 0,
+    totalAssets,
+    activeAssets:
+      assets.data?.filter((a) => a.status === "Active").length || 0,
+    maintenanceAssets:
+      assets.data?.filter((a) => a.status === "Maintenance").length || 0,
   };
 }

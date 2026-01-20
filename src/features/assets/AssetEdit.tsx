@@ -11,8 +11,8 @@ import { useEffect } from "react";
 /* ---------------- Schema ---------------- */
 
 const schema = z.object({
-  name: z.string().min(1, "Asset name is required"),
-  type: z.string().min(1, "Asset type is required"),
+  name: z.string().trim().min(1, "Asset name is required"),
+  type: z.string().trim().min(1, "Asset type is required"),
   status: z.enum(["Active", "Maintenance", "Inactive"]),
 });
 
@@ -145,14 +145,18 @@ export default function AssetEdit() {
 
         {/* Status */}
         <FormField label="Status">
-          <select
-            {...register("status")}
-            className="w-full border rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
-          >
-            <option value="Active">Active</option>
-            <option value="Maintenance">Maintenance</option>
-            <option value="Inactive">Inactive</option>
-          </select>
+          <label className="flex items-center gap-2">
+            <input type="radio" value="Active" {...register("status")} />
+            Active
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="radio" value="Maintenance" {...register("status")} />
+            Maintenance
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="radio" value="Inactive" {...register("status")} />
+            Inactive
+          </label>
         </FormField>
 
         {/* Actions */}

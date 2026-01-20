@@ -9,6 +9,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         redirect_uri: window.location.origin,
         audience: import.meta.env.VITE_AUTH0_AUDIENCE,
       }}
+      cacheLocation="localstorage"
+      useRefreshTokens={true}
     >
       {children}
     </Auth0Provider>

@@ -1,8 +1,11 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
+import { useAuth0SupabaseSync } from "../../hooks/useAuth0SupabaseSync";
 
 export default function AppLayout() {
+  useAuth0SupabaseSync();
+
   return (
     <div className="flex h-screen bg-gray-100">
       <Sidebar />

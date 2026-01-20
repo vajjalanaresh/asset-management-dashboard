@@ -1,0 +1,1 @@
+export type AssetStatus = "Active" | "Inactive" | "Maintenance";

@@ -5,5 +5,7 @@ export type Building = {
   address?: string;
   status: 'Active' | 'Inactive';
   square_footage?: number;
+  
   created_at: string;
+  
 };

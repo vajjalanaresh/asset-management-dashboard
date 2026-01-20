@@ -1,17 +1,50 @@
 import { supabase } from "../../lib/supabase";
 import type { Customer } from "./types";
 
-export async function fetchCustomers(): Promise<Customer[]> {
+
+export async function fetchCustomers(
+  page: number,
+  pageSize = 10
+): Promise<{ data: Customer[]; count: number }> {
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  const { data, error, count } = await supabase
+    .from("customers")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (error) throw error;
+
+  return {
+    data: data ?? [],
+    count: count ?? 0,
+  };
+}
+
+export async function updateCustomer(
+  id: string,
+  data: { name: string }
+) {
+  const { error } = await supabase
+    .from("customers")
+    .update(data)
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
+export async function fetchCustomerById(id: string) {
   const { data, error } = await supabase
     .from("customers")
     .select("*")
-    .order("created_at", { ascending: false });
+    .eq("id", id)
+    .single();
 
   if (error) throw error;
   return data;
 }
-
-
 
 export async function createCustomer(name: string) {
   const { error } = await supabase.from("customers").insert({ name });

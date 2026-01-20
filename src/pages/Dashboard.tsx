@@ -1,7 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { apiService } from "../services/api";
+import { fetchDashboardStats } from "../features/dashboard/queries";
+
 import { Users, Building2, Boxes, CheckCircle, Wrench } from "lucide-react";
 import { useDashboardRealtime } from "../features/dashboard/useDashboardRealtime";
 
@@ -90,7 +91,7 @@ const Dashboard: React.FC = () => {
 
   const { data: stats, isLoading } = useQuery<DashboardStats>({
     queryKey: ["dashboard-stats"],
-    queryFn: () => apiService.getStats(),
+    queryFn: fetchDashboardStats,
   });
 
   if (isLoading) {
@@ -105,9 +106,10 @@ const Dashboard: React.FC = () => {
 
   /* ---------------- Derived Metrics ---------------- */
 
-  const activePct = Math.round(
-    (stats.activeAssets / stats.totalAssets) * 100 || 0,
-  );
+  const activePct =
+    stats.totalAssets > 0
+      ? Math.round((stats.activeAssets / stats.totalAssets) * 100)
+      : 0;
 
   const maintenancePct = Math.round(
     (stats.maintenanceAssets / stats.totalAssets) * 100 || 0,
@@ -123,7 +125,7 @@ const Dashboard: React.FC = () => {
     { name: "Active", value: stats.activeAssets, color: "#22c55e" },
     { name: "Maintenance", value: stats.maintenanceAssets, color: "#f59e0b" },
     {
-      name: "Other",
+      name: "Inactive",
       value: stats.totalAssets - stats.activeAssets - stats.maintenanceAssets,
       color: "#94a3b8",
     },

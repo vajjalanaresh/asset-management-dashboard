@@ -1,10 +1,20 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchBuildings, deleteBuildingCascade } from "./queries";
-import { Building2, MapPin, ArrowRight, Plus, Trash2 } from "lucide-react";
+import { fetchCustomerById } from "../customers/queries";
+import {
+  Building2,
+  MapPin,
+  ArrowRight,
+  Plus,
+  Trash2,
+  Users,
+  Pencil,
+} from "lucide-react";
 import { useState } from "react";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import Breadcrumbs from "../../components/ui/Breadcrumbs";
+import EditCustomerModal from "../customers/EditCustomerModel";
 
 export default function BuildingsList() {
   const { customerId } = useParams<{ customerId: string }>();
@@ -12,8 +22,24 @@ export default function BuildingsList() {
   const queryClient = useQueryClient();
 
   const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
+  const [editCustomer, setEditCustomer] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
-  const { data, isLoading, error } = useQuery({
+  /* ---------------- Queries ---------------- */
+
+  const { data: customer, isLoading: customerLoading } = useQuery({
+    queryKey: ["customer", customerId],
+    queryFn: () => fetchCustomerById(customerId!),
+    enabled: !!customerId,
+  });
+
+  const {
+    data: buildings,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["buildings", customerId],
     queryFn: () => fetchBuildings(customerId!),
     enabled: !!customerId,
@@ -29,7 +55,7 @@ export default function BuildingsList() {
     },
   });
 
-  if (isLoading) {
+  if (isLoading || customerLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin h-10 w-10 rounded-full border-b-2 border-blue-600" />
@@ -37,22 +63,60 @@ export default function BuildingsList() {
     );
   }
 
-  if (error) {
+  if (error || !customer) {
     return (
       <div className="bg-red-50 text-red-600 p-6 rounded-xl">
-        Failed to load buildings
+        Failed to load data
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <Breadcrumbs  
+    <div className="space-y-10">
+      {/* Breadcrumbs */}
+      <Breadcrumbs
         items={[
           { label: "Customers", href: "/customers" },
-          { label: "Buildings" },
+          { label: customer.name },
         ]}
       />
+
+      {/* Customer Info Card */}
+      <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
+            <Users className="w-7 h-7" />
+          </div>
+
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">{customer.name}</h2>
+            <p className="text-sm text-gray-500">Customer ID: {customer.id}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-gray-500">
+            Total Buildings:{" "}
+            <span className="font-semibold text-gray-900">
+              {buildings?.length ?? 0}
+            </span>
+          </div>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditCustomer({
+                id: customer.id,
+                name: customer.name,
+              });
+            }}
+            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
+            aria-label="Edit customer"
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
 
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -73,14 +137,14 @@ export default function BuildingsList() {
       </div>
 
       {/* Buildings Grid */}
-      {!data?.length ? (
+      {!buildings?.length ? (
         <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-3xl py-20 text-center">
           <Building2 className="w-10 h-10 mx-auto text-gray-400 mb-4" />
           <p className="text-gray-500 font-semibold">No buildings found</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {data.map((building) => (
+          {buildings.map((building) => (
             <div
               key={building.id}
               onClick={() =>
@@ -90,19 +154,16 @@ export default function BuildingsList() {
               }
               className="group bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl transition-all cursor-pointer relative"
             >
-              {/* Delete Button */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setSelectedBuilding(building.id);
                 }}
                 className="absolute top-4 right-4 p-2 rounded-full bg-red-50 hover:bg-red-100 text-red-600"
-                title="Delete building"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
 
-              {/* Icon */}
               <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mb-6">
                 <Building2 className="w-7 h-7" />
               </div>
@@ -127,7 +188,7 @@ export default function BuildingsList() {
         </div>
       )}
 
-      {/* Confirmation Dialog */}
+      {/* Delete Confirmation */}
       <ConfirmDialog
         open={!!selectedBuilding}
         title="Delete Building"
@@ -139,6 +200,15 @@ export default function BuildingsList() {
         }
         loading={deleteMutation.isPending}
       />
+
+      {/* Edit Customer Modal */}
+      {editCustomer && (
+        <EditCustomerModal
+          open={!!editCustomer}
+          customer={editCustomer}
+          onClose={() => setEditCustomer(null)}
+        />
+      )}
     </div>
   );
 }

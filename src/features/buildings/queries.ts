@@ -12,12 +12,43 @@ export async function fetchBuildings(customerId: string): Promise<Building[]> {
   return data;
 }
 
+export async function updateBuilding(
+  id: string,
+  data: {
+    name: string;
+    address?: string;
+    status: "Active" | "Inactive";
+    square_footage?: number;
+  // opened_date?: string | null;
+
+  }
+) {
+  const { error } = await supabase
+    .from("buildings")
+    .update(data)
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
+export async function fetchBuildingById(id: string) {
+  const { data, error } = await supabase
+    .from("buildings")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
 export async function createBuilding(input: {
   customer_id: string;
   name: string;
   address?: string;
   status: 'Active' | 'Inactive';
   square_footage?: number;
+
 }) {
   const { error } = await supabase.from('buildings').insert(input);
   if (error) throw error;

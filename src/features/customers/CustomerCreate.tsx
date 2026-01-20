@@ -5,11 +5,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createCustomer } from "./queries";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Users } from "lucide-react";
+import { getErrorMessage } from "../../utils/getErrorMessage";
 
 /* ---------------- Schema ---------------- */
 
 const schema = z.object({
-  name: z.string().min(1, "Customer name is required"),
+  name: z.string().trim().min(1, "Customer name is required"),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -43,6 +44,7 @@ export default function CustomerCreate() {
         <button
           onClick={() => navigate(-1)}
           className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
+          aria-label="Go back"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -79,7 +81,7 @@ export default function CustomerCreate() {
           <button
             type="submit"
             disabled={mutation.isPending}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition"
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition disabled:opacity-60"
           >
             {mutation.isPending ? "Saving..." : "Create Customer"}
           </button>
@@ -93,10 +95,10 @@ export default function CustomerCreate() {
           </button>
         </div>
 
-        {/* Error */}
+        {/* 🔥 Contextual Error */}
         {mutation.isError && (
           <p className="text-red-600 text-sm">
-            Failed to create customer. Please try again.
+            {getErrorMessage(mutation.error)}
           </p>
         )}
       </form>

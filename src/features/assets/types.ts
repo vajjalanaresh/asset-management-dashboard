@@ -3,6 +3,6 @@ export type Asset = {
   building_id: string;
   name: string;
   type?: string;
-  status: 'Active' | 'Inactive';
+  status: 'Active' | 'Inactive' | 'Maintenance';
   created_at: string;
 };
